@@ -7,7 +7,7 @@ CONFIG_FILE = "data/system_config.json"
 
 # Configurações padrão
 DEFAULT_CONFIG = {
-    "logo_path": "assets/images/logo.png",
+    "logo_path": "assets/images/logo.svg",  # Usando .svg em vez de .png
     "system_name": "Sistema de Gestão - Pós-Graduação Libras",
     "theme_color": "#1E88E5"
 }
@@ -40,7 +40,12 @@ def save_config(config_data):
 def get_logo_path():
     """Obter o caminho da logo atual"""
     config = load_config()
-    return config.get("logo_path", DEFAULT_CONFIG["logo_path"])
+    logo_path = config.get("logo_path", DEFAULT_CONFIG["logo_path"])
+    
+    # Verificar se o arquivo existe, caso contrário, voltar para o padrão
+    if not os.path.exists(logo_path):
+        return DEFAULT_CONFIG["logo_path"]
+    return logo_path
 
 def save_uploaded_logo(uploaded_file):
     """Salvar logo enviada pelo usuário"""
