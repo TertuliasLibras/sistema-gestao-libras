@@ -122,8 +122,7 @@ with tab1:
                     None,  # end_date
                     due_day
                 )
-                
-                # Add payment records to dataframe
+                                # Add payment records to dataframe
                 if payments_df is None or payments_df.empty:
                     payments_df = pd.DataFrame(payment_records)
                 else:
@@ -134,7 +133,8 @@ with tab1:
                 save_payments_data(payments_df)
                 
                 st.success(f"Aluno {name} cadastrado com sucesso!")
-                with tab2:
+
+with tab2:
     st.subheader("Lista de Alunos")
     
     # Filter options
@@ -265,8 +265,7 @@ with tab1:
             st.warning("Nenhum aluno encontrado com os filtros selecionados.")
     else:
         st.info("Não há alunos cadastrados ainda.")
-
-with tab3:
+        with tab3:
     st.subheader("Editar ou Excluir Aluno")
     
     if students_df is not None and not students_df.empty:
