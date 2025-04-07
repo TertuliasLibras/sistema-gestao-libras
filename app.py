@@ -185,7 +185,7 @@ else:
         # Main app title with logo
         col1, col2 = st.columns([1, 3])
         with col1:
-            st.image('assets/images/logo.svg', width=150)
+            st.image('./assets/images/logo.svg', width=150)
         with col2:
             st.markdown('<div class="logo-text">Sistema de Gestão - Pós-Graduação Libras</div>', unsafe_allow_html=True)
         
