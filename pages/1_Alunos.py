@@ -174,20 +174,52 @@ with tab2:
             # Format monthly fee
             display_df['monthly_fee'] = display_df['monthly_fee'].apply(lambda x: f"R$ {x:.2f}".replace('.', ','))
             
-            # Display only relevant columns
+            # Check which columns are available in the dataframe
+            available_columns = []
+            column_config = {}
+            
+            # Always include these basic columns
+            if 'phone' in display_df.columns:
+                available_columns.append('phone')
+                column_config['phone'] = 'Telefone'
+                
+            if 'name' in display_df.columns:
+                available_columns.append('name')
+                column_config['name'] = 'Nome'
+            
+            # Check for new columns (might not exist in older data)
+            if 'cpf' in display_df.columns:
+                available_columns.append('cpf')
+                column_config['cpf'] = 'CPF'
+            elif 'email' in display_df.columns:  # Backward compatibility
+                available_columns.append('email')
+                column_config['email'] = 'Email'
+                
+            if 'course_type' in display_df.columns:
+                available_columns.append('course_type')
+                column_config['course_type'] = 'Tipo de Curso'
+                
+            if 'enrollment_date' in display_df.columns:
+                available_columns.append('enrollment_date')
+                column_config['enrollment_date'] = 'Data de Matrícula'
+                
+            if 'status' in display_df.columns:
+                available_columns.append('status')
+                column_config['status'] = 'Status'
+                
+            if 'monthly_fee' in display_df.columns:
+                available_columns.append('monthly_fee')
+                column_config['monthly_fee'] = 'Mensalidade'
+                
+            if 'payment_plan' in display_df.columns:
+                available_columns.append('payment_plan')
+                column_config['payment_plan'] = 'Parcelas'
+            
+            # Display only relevant columns that exist
             st.dataframe(
-                display_df[['phone', 'name', 'cpf', 'course_type', 'enrollment_date', 'status', 'monthly_fee', 'payment_plan']],
+                display_df[available_columns],
                 use_container_width=True,
-                column_config={
-                    'phone': 'Telefone',
-                    'name': 'Nome',
-                    'cpf': 'CPF',
-                    'course_type': 'Tipo de Curso',
-                    'enrollment_date': 'Data de Matrícula',
-                    'status': 'Status',
-                    'monthly_fee': 'Mensalidade',
-                    'payment_plan': 'Parcelas'
-                }
+                column_config=column_config
             )
             
             st.info(f"Total de alunos: {len(filtered_df)}")
@@ -298,6 +330,12 @@ with tab3:
                 if update_button:
                     # Update student record
                     students_df.loc[students_df['phone'] == selected_phone, 'name'] = name
+                    
+                    # Ensure required columns exist
+                    for column in ['cpf', 'course_type', 'payment_plan']:
+                        if column not in students_df.columns:
+                            students_df[column] = None
+                    
                     students_df.loc[students_df['phone'] == selected_phone, 'cpf'] = cpf
                     students_df.loc[students_df['phone'] == selected_phone, 'course_type'] = course_type
                     students_df.loc[students_df['phone'] == selected_phone, 'payment_plan'] = payment_plan
