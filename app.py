@@ -1,12 +1,9 @@
-from config import get_logo_path, load_config, save_config, save_uploaded_logo
 import os
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
 import calendar
-import traceback
-import sys
 from utils import (
     load_students_data, 
     load_payments_data, 
@@ -18,20 +15,7 @@ from utils import (
     format_currency
 )
 from login import verificar_autenticacao, mostrar_pagina_login, pagina_gerenciar_usuarios, logout
-
-# Melhorar diagnóstico de erros
-try:
-    # Verificar se o diretório assets existe
-    if not os.path.exists("assets/images"):
-        st.error("Diretório de assets não encontrado. Criando...")
-        os.makedirs("assets/images", exist_ok=True)
-        
-    # Verificar se o logo existe
-    if not os.path.exists("assets/images/logo.svg"):
-        st.error("Logo não encontrado no caminho assets/images/logo.svg")
-except Exception as e:
-    st.error(f"Erro ao verificar assets: {e}")
-    st.code(traceback.format_exc())
+from config import get_logo_path, load_config, save_config, save_uploaded_logo
 
 # Set page configuration
 st.set_page_config(
@@ -109,9 +93,19 @@ else:
             st.markdown("[⏱️ Estágios](/Estagios)")
             st.markdown("[📈 Relatórios](/Relatorios)")
             
-            # Opção de gerenciar usuários (apenas admin)
-            if st.button("Gerenciar Usuários"):
-                st.session_state["mostrar_gerenciamento_usuarios"] = True
+            # Opções de administração (apenas admin)
+            st.markdown("### Administração")
+            
+            # Botões para cada opção de administração
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("Gerenciar Usuários"):
+                    st.session_state["mostrar_gerenciamento_usuarios"] = True
+                    
+            with col2:
+                if st.button("Configurações"):
+                    st.session_state["mostrar_configuracoes"] = True
             
             st.divider()
         else:
@@ -142,6 +136,46 @@ else:
         pagina_gerenciar_usuarios()
         if st.button("Voltar ao Dashboard"):
             st.session_state["mostrar_gerenciamento_usuarios"] = False
+            st.rerun()
+    
+    # Verificar se deve mostrar a página de configurações
+    elif st.session_state.get("mostrar_configuracoes", False):
+        st.subheader("Configurações do Sistema")
+        
+        # Carregar configurações atuais
+        config = load_config()
+        
+        # Upload de logo
+        st.write("### Logo do Sistema")
+        st.write("Faça upload de uma nova imagem para usar como logo do sistema.")
+        
+        uploaded_file = st.file_uploader("Escolher imagem", type=['png', 'jpg', 'jpeg', 'svg'])
+        if uploaded_file is not None:
+            # Exibir preview da imagem
+            st.image(uploaded_file, width=200, caption="Preview da nova logo")
+            
+            # Botão para salvar
+            if st.button("Salvar Nova Logo"):
+                logo_path = save_uploaded_logo(uploaded_file)
+                if logo_path:
+                    st.success(f"Logo atualizada com sucesso! Novo caminho: {logo_path}")
+                    # Aguardar um pouco antes de recarregar
+                    st.rerun()
+        
+        # Mostrar logo atual
+        st.write("### Logo Atual")
+        logo_path = get_logo_path()
+        st.image(logo_path, width=150)
+        
+        # Opções para restaurar logo padrão
+        if st.button("Restaurar Logo Padrão"):
+            config["logo_path"] = "assets/images/logo.png"
+            save_config(config)
+            st.success("Logo padrão restaurada com sucesso!")
+            st.rerun()
+        
+        if st.button("Voltar ao Dashboard"):
+            st.session_state["mostrar_configuracoes"] = False
             st.rerun()
     
     # Verificar se deve mostrar a página de backup
@@ -214,38 +248,19 @@ else:
         col1, col2 = st.columns([1, 3])
         with col1:
             try:
-                st.image('./assets/images/logo.svg', width=150)
+                # Usar função para obter o caminho da logo
+                logo_path = get_logo_path()
+                st.image(logo_path, width=150)
             except Exception as e:
-                st.error(f"Erro ao carregar logo: {e}")
-                st.write("Tentando caminho alternativo...")
-                try:
-                    # Tentar caminhos alternativos
-                    if os.path.exists("assets/images/logo.svg"):
-                        st.write("Logo existe, mas não pode ser carregado")
-                    else:
-                        st.write("Logo não existe no caminho esperado")
-                        
-                    # Listar arquivos na pasta assets
-                    if os.path.exists("assets"):
-                        st.write(f"Arquivos em assets: {os.listdir('assets')}")
-                        if os.path.exists("assets/images"):
-                            st.write(f"Arquivos em assets/images: {os.listdir('assets/images')}")
-                except Exception as e2:
-                    st.error(f"Erro ao verificar caminhos: {e2}")
+                st.write(f"Erro ao carregar logo: {e}")
+                st.write("Entre em contato com suporte.")
         with col2:
             st.markdown('<div class="logo-text">Sistema de Gestão - Pós-Graduação Libras</div>', unsafe_allow_html=True)
         
         # Load data
-        try:
-            students_df = load_students_data()
-            payments_df = load_payments_data()
-            internships_df = load_internships_data()
-        except Exception as e:
-            st.error(f"Erro ao carregar dados: {e}")
-            st.code(traceback.format_exc())
-            students_df = pd.DataFrame()
-            payments_df = pd.DataFrame()
-            internships_df = pd.DataFrame()
+        students_df = load_students_data()
+        payments_df = load_payments_data()
+        internships_df = load_internships_data()
         
         # Dashboard
         st.header("Dashboard")
@@ -291,8 +306,8 @@ else:
         with col1:
             # Cancellation trend
             if not canceled_students.empty:
-                # Convert cancellation dates to datetime
-                canceled_students['cancellation_date'] = pd.to_datetime(canceled_students['cancellation_date'])
+                # Convert cancellation dates to datetime with error handling
+                canceled_students['cancellation_date'] = pd.to_datetime(canceled_students['cancellation_date'], errors='coerce')
                 
                 # Group by month and count cancellations
                 cancellations_by_month = canceled_students.groupby(
@@ -375,8 +390,8 @@ else:
             # Show recent internships
             st.write("Estágios Recentes:")
             
-            # Convert date to datetime
-            internships_df['date'] = pd.to_datetime(internships_df['date'])
+            # Convert date to datetime with error handling
+            internships_df['date'] = pd.to_datetime(internships_df['date'], errors='coerce')
             
             # Sort by date (most recent first) and show top 5
             recent_internships = internships_df.sort_values('date', ascending=False).head(5)
