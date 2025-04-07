@@ -1,3 +1,9 @@
+from login import verificar_autenticacao, mostrar_pagina_login
+
+# Verificar autenticação
+if not verificar_autenticacao():
+    mostrar_pagina_login()
+    st.stop()  # Parar a execução do restante da página
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
