@@ -105,9 +105,7 @@ with tab1:
                     'due_day': due_day,
                     'source': source,
                     'notes': notes
-                }
-                
-                # Add to dataframe
+                }                 # Add to dataframe
                 if students_df is None or students_df.empty:
                     students_df = pd.DataFrame([new_student])
                 else:
@@ -122,7 +120,8 @@ with tab1:
                     None,  # end_date
                     due_day
                 )
-                                # Add payment records to dataframe
+                
+                # Add payment records to dataframe
                 if payments_df is None or payments_df.empty:
                     payments_df = pd.DataFrame(payment_records)
                 else:
@@ -232,9 +231,7 @@ with tab2:
                 
             if 'due_day' in display_df.columns:
                 available_columns.append('due_day')
-                column_config['due_day'] = 'Dia de Vencimento'
-                
-            if 'source' in display_df.columns:
+                column_config['due_day'] = 'Dia de Vencimento'             if 'source' in display_df.columns:
                 available_columns.append('source')
                 column_config['source'] = 'Origem do Cadastro'
             
@@ -265,7 +262,8 @@ with tab2:
             st.warning("Nenhum aluno encontrado com os filtros selecionados.")
     else:
         st.info("Não há alunos cadastrados ainda.")
-        with tab3:
+
+with tab3:
     st.subheader("Editar ou Excluir Aluno")
     
     if students_df is not None and not students_df.empty:
