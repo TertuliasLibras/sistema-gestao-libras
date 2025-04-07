@@ -10,7 +10,12 @@ from utils import (
     load_students_data, 
     load_payments_data, 
     load_internships_data,
-    get_active_students,
+st.sidebar.markdown("### Menu de Navegação")
+st.sidebar.markdown("[📊 Dashboard](./)")
+st.sidebar.markdown("[👨‍🎓 Alunos](/alunos)")
+st.sidebar.markdown("[💰 Pagamentos](/pagamentos)")
+st.sidebar.markdown("[⏱️ Estágios](/estagios)")
+st.sidebar.markdown("[📈 Relatórios](/relatorios)")
     get_canceled_students,
     get_overdue_payments,
     calculate_monthly_revenue,
@@ -105,11 +110,12 @@ else:
         st.write(f"Usuário: {st.session_state['usuario_autenticado']['nome']}")
         
         if st.session_state['usuario_autenticado']['nivel'] == "admin":
-            st.page_link("app.py", label="Dashboard", icon="📊")
-            st.page_link("pages/alunos.py", label="Alunos", icon="👨‍🎓")
-            st.page_link("pages/pagamentos.py", label="Pagamentos", icon="💰")
-            st.page_link("pages/estagios.py", label="Estágios", icon="⏱️")
-            st.page_link("pages/relatorios.py", label="Relatórios", icon="📈")
+           st.sidebar.markdown("### Menu de Navegação")
+st.sidebar.markdown("[📊 Dashboard](./)")
+st.sidebar.markdown("[👨‍🎓 Alunos](/alunos)")
+st.sidebar.markdown("[💰 Pagamentos](/pagamentos)")
+st.sidebar.markdown("[⏱️ Estágios](/estagios)")
+st.sidebar.markdown("[📈 Relatórios](/relatorios)")
             
             # Opção de gerenciar usuários (apenas admin)
             if st.button("Gerenciar Usuários"):
@@ -117,11 +123,12 @@ else:
             
             st.divider()
         else:
-            st.page_link("app.py", label="Dashboard", icon="📊")
-            st.page_link("pages/alunos.py", label="Alunos", icon="👨‍🎓")
-            st.page_link("pages/pagamentos.py", label="Pagamentos", icon="💰")
-            st.page_link("pages/estagios.py", label="Estágios", icon="⏱️")
-            st.page_link("pages/relatorios.py", label="Relatórios", icon="📈")
+       st.sidebar.markdown("### Menu de Navegação")
+st.sidebar.markdown("[📊 Dashboard](./)")
+st.sidebar.markdown("[👨‍🎓 Alunos](/alunos)")
+st.sidebar.markdown("[💰 Pagamentos](/pagamentos)")
+st.sidebar.markdown("[⏱️ Estágios](/estagios)")
+st.sidebar.markdown("[📈 Relatórios](/relatorios)")
             st.divider()
         
         # Opção para fazer backup dos dados
