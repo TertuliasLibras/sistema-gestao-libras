@@ -107,12 +107,26 @@ def mostrar_pagina_login():
     col1, col2 = st.columns([1, 3])
     with col1:
         try:
-            # Usar função para obter o caminho da logo
+            # Tentar usar a logo configurada
             logo_path = get_logo_path()
-            st.image(logo_path, width=120)
+            
+            # Verificar se o arquivo existe
+            if os.path.exists(logo_path):
+                st.image(logo_path, width=120)
+            else:
+                # Tentar alternativas
+                if os.path.exists('assets/images/logo.svg'):
+                    st.image('assets/images/logo.svg', width=120)
+                elif os.path.exists('assets/images/logo.png'):
+                    st.image('assets/images/logo.png', width=120)
+                else:
+                    st.markdown("**LOGO**")
         except Exception as e:
-            st.warning("Erro ao carregar a logo.")
-            st.image('assets/images/logo.png', width=120)
+            # Em caso de erro, mostrar mensagem e tentar logo padrão
+            if os.path.exists('assets/images/logo.svg'):
+                st.image('assets/images/logo.svg', width=120)
+            else:
+                st.markdown("**LOGO**")
     with col2:
         st.title("Sistema de Gestão Libras")
 
