@@ -77,28 +77,24 @@ def get_overdue_payments(students_df, payments_df):
     if students_df.empty or payments_df.empty:
         return pd.DataFrame()
     
-    # Create a dataframe to store overdue information
-    overdue_list = []
-    today = datetime.now().date()
-    
     # Get active students
     active_students = get_active_students(students_df)
     if active_students.empty:
         return pd.DataFrame()
     
+    # Create a dataframe to store overdue information
+    overdue_list = []
+    today = datetime.now().date()
+    
     # Loop through active students
     for _, student in active_students.iterrows():
         try:
             # Get all payments for this student
-            student_phone = student['phone']
-            student_payments = payments_df[payments_df['phone'] == student_phone]
+            student_payments = payments_df[payments_df['phone'] == student['phone']]
             
             if student_payments.empty:
                 # If no payments at all, consider overdue from enrollment date
                 try:
-                    if 'enrollment_date' not in student or pd.isna(student['enrollment_date']):
-                        continue
-                        
                     enrollment_date = pd.to_datetime(student['enrollment_date'], errors='coerce')
                     if pd.isna(enrollment_date):
                         continue
@@ -107,31 +103,22 @@ def get_overdue_payments(students_df, payments_df):
                     if enrollment_date < today - timedelta(days=30):
                         days_overdue = (today - enrollment_date).days - 30
                         overdue_list.append({
-                            'name': student.get('name', ''),
-                            'phone': student_phone,
-                            'email': student.get('email', ''),
-                            'monthly_fee': student.get('monthly_fee', 0),
+                            **student.to_dict(),
                             'last_due_date': enrollment_date + timedelta(days=30),
                             'days_overdue': days_overdue
                         })
                 except Exception as e:
-                    print(f"Error processing enrollment date for student: {e}")
+                    print(f"Error processing enrollment date for {student.get('name', 'unknown')}: {e}")
                     continue
             else:
                 try:
                     # Ensure due_date is datetime type
                     student_payments['due_date'] = pd.to_datetime(student_payments['due_date'], errors='coerce')
                     
-                    # Drop rows with NaT in due_date
-                    valid_payments = student_payments.dropna(subset=['due_date'])
-                    
-                    if valid_payments.empty:
-                        continue
-                    
                     # Filter to only get payments with due dates in the past and not paid
-                    overdue_payments = valid_payments[
-                        (valid_payments['status'] != 'paid') & 
-                        (valid_payments['due_date'].dt.date < today)
+                    overdue_payments = student_payments[
+                        (student_payments['status'] != 'paid') & 
+                        (student_payments['due_date'].dt.date < today)
                     ]
                     
                     if not overdue_payments.empty:
@@ -142,10 +129,7 @@ def get_overdue_payments(students_df, payments_df):
                         
                         # Add to overdue list
                         overdue_list.append({
-                            'name': student.get('name', ''),
-                            'phone': student_phone,
-                            'email': student.get('email', ''),
-                            'monthly_fee': student.get('monthly_fee', 0),
+                            **student.to_dict(),
                             'last_due_date': due_date,
                             'days_overdue': days_overdue
                         })
@@ -153,7 +137,7 @@ def get_overdue_payments(students_df, payments_df):
                     print(f"Error processing payments for student {student.get('name', 'unknown')}: {e}")
                     continue
         except Exception as e:
-            print(f"General error processing student: {e}")
+            print(f"General error processing student {student.get('name', 'unknown')}: {e}")
             continue
     
     # Create dataframe from overdue list
@@ -307,15 +291,35 @@ def get_months_between_dates(start_date, end_date):
         print(f"Error getting months between dates: {e}")
         return []
 
-def generate_monthly_payments(student_phone, monthly_fee, enrollment_date, end_date=None):
-    """Generate monthly payment records for a student"""
+def generate_monthly_payments(student_phone, monthly_fee, enrollment_date, payment_plan=12, end_date=None):
+    """Generate monthly payment records for a student based on payment plan
+    
+    Args:
+        student_phone: Phone number of student
+        monthly_fee: Monthly fee amount
+        enrollment_date: Date of enrollment
+        payment_plan: Number of installments (default: 12)
+        end_date: Optional end date (if not provided, will calculate based on payment_plan)
+    """
     try:
+        # Convert payment_plan to int if it's not already
+        payment_plan = int(payment_plan) if payment_plan else 12
+        
+        # If no end_date provided, calculate it based on payment_plan
         if not end_date:
-            end_date = datetime.now().date() + timedelta(days=365)  # Default to 1 year ahead
+            enrollment_date_dt = pd.to_datetime(enrollment_date, errors='coerce')
+            if pd.isna(enrollment_date_dt):
+                return []
+                
+            # Calculate end date based on payment plan (number of months)
+            end_date = enrollment_date_dt.date() + pd.DateOffset(months=payment_plan)
         else:
             end_date = pd.to_datetime(end_date, errors='coerce')
             if pd.isna(end_date):
-                end_date = datetime.now().date() + timedelta(days=365)
+                enrollment_date_dt = pd.to_datetime(enrollment_date, errors='coerce')
+                if pd.isna(enrollment_date_dt):
+                    return []
+                end_date = enrollment_date_dt.date() + pd.DateOffset(months=payment_plan)
             else:
                 end_date = end_date.date()
             
@@ -327,6 +331,9 @@ def generate_monthly_payments(student_phone, monthly_fee, enrollment_date, end_d
         
         # Get list of months
         months = get_months_between_dates(enrollment_date, end_date)
+        
+        # Limit to the number of installments in payment_plan
+        months = months[:payment_plan]
         
         payments = []
         
