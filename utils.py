@@ -77,24 +77,28 @@ def get_overdue_payments(students_df, payments_df):
     if students_df.empty or payments_df.empty:
         return pd.DataFrame()
     
+    # Create a dataframe to store overdue information
+    overdue_list = []
+    today = datetime.now().date()
+    
     # Get active students
     active_students = get_active_students(students_df)
     if active_students.empty:
         return pd.DataFrame()
     
-    # Create a dataframe to store overdue information
-    overdue_list = []
-    today = datetime.now().date()
-    
     # Loop through active students
     for _, student in active_students.iterrows():
         try:
             # Get all payments for this student
-            student_payments = payments_df[payments_df['phone'] == student['phone']]
+            student_phone = student['phone']
+            student_payments = payments_df[payments_df['phone'] == student_phone]
             
             if student_payments.empty:
                 # If no payments at all, consider overdue from enrollment date
                 try:
+                    if 'enrollment_date' not in student or pd.isna(student['enrollment_date']):
+                        continue
+                        
                     enrollment_date = pd.to_datetime(student['enrollment_date'], errors='coerce')
                     if pd.isna(enrollment_date):
                         continue
@@ -103,22 +107,31 @@ def get_overdue_payments(students_df, payments_df):
                     if enrollment_date < today - timedelta(days=30):
                         days_overdue = (today - enrollment_date).days - 30
                         overdue_list.append({
-                            **student.to_dict(),
+                            'name': student.get('name', ''),
+                            'phone': student_phone,
+                            'email': student.get('email', ''),
+                            'monthly_fee': student.get('monthly_fee', 0),
                             'last_due_date': enrollment_date + timedelta(days=30),
                             'days_overdue': days_overdue
                         })
                 except Exception as e:
-                    print(f"Error processing enrollment date for {student.get('name', 'unknown')}: {e}")
+                    print(f"Error processing enrollment date for student: {e}")
                     continue
             else:
                 try:
                     # Ensure due_date is datetime type
                     student_payments['due_date'] = pd.to_datetime(student_payments['due_date'], errors='coerce')
                     
+                    # Drop rows with NaT in due_date
+                    valid_payments = student_payments.dropna(subset=['due_date'])
+                    
+                    if valid_payments.empty:
+                        continue
+                    
                     # Filter to only get payments with due dates in the past and not paid
-                    overdue_payments = student_payments[
-                        (student_payments['status'] != 'paid') & 
-                        (student_payments['due_date'].dt.date < today)
+                    overdue_payments = valid_payments[
+                        (valid_payments['status'] != 'paid') & 
+                        (valid_payments['due_date'].dt.date < today)
                     ]
                     
                     if not overdue_payments.empty:
@@ -129,7 +142,10 @@ def get_overdue_payments(students_df, payments_df):
                         
                         # Add to overdue list
                         overdue_list.append({
-                            **student.to_dict(),
+                            'name': student.get('name', ''),
+                            'phone': student_phone,
+                            'email': student.get('email', ''),
+                            'monthly_fee': student.get('monthly_fee', 0),
                             'last_due_date': due_date,
                             'days_overdue': days_overdue
                         })
@@ -137,7 +153,7 @@ def get_overdue_payments(students_df, payments_df):
                     print(f"Error processing payments for student {student.get('name', 'unknown')}: {e}")
                     continue
         except Exception as e:
-            print(f"General error processing student {student.get('name', 'unknown')}: {e}")
+            print(f"General error processing student: {e}")
             continue
     
     # Create dataframe from overdue list
