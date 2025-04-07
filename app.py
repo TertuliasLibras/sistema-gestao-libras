@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
 import calendar
+import traceback
+import sys
 from utils import (
     load_students_data, 
     load_payments_data, 
@@ -15,14 +17,36 @@ from utils import (
     format_currency
 )
 from login import verificar_autenticacao, mostrar_pagina_login, pagina_gerenciar_usuarios, logout
+
+# Melhorar diagnóstico de erros
+try:
+    # Verificar se o diretório assets existe
+    if not os.path.exists("assets/images"):
+        st.error("Diretório de assets não encontrado. Criando...")
+        os.makedirs("assets/images", exist_ok=True)
+        
+    # Verificar se o logo existe
+    if not os.path.exists("assets/images/logo.svg"):
+        st.error("Logo não encontrado no caminho assets/images/logo.svg")
+except Exception as e:
+    st.error(f"Erro ao verificar assets: {e}")
+    st.code(traceback.format_exc())
+
 # Set page configuration
 st.set_page_config(
     page_title="Sistema de Gestão - Pós-Graduação Libras",
     page_icon="📊",
     layout="wide"
 )
+
+# Diagnóstico de inicialização
+st.write(f"Diretório atual: {os.getcwd()}")
+st.write(f"Arquivos na pasta atual: {os.listdir('.')}")
+st.write(f"Arquivos em assets (se existir): {os.listdir('assets') if os.path.exists('assets') else 'Pasta assets não existe'}")
+
 # Create the data directory if it doesn't exist
 os.makedirs("data", exist_ok=True)
+
 # Create empty data files if they don't exist
 if not os.path.exists("data/students.csv"):
     pd.DataFrame({
@@ -36,6 +60,7 @@ if not os.path.exists("data/students.csv"):
         "monthly_fee": [],
         "notes": []
     }).to_csv("data/students.csv", index=False)
+
 if not os.path.exists("data/payments.csv"):
     pd.DataFrame({
         "phone": [],
@@ -47,6 +72,7 @@ if not os.path.exists("data/payments.csv"):
         "status": [],
         "notes": []
     }).to_csv("data/payments.csv", index=False)
+
 if not os.path.exists("data/internships.csv"):
     pd.DataFrame({
         "date": [],
@@ -54,6 +80,7 @@ if not os.path.exists("data/internships.csv"):
         "duration_hours": [],
         "students": []
     }).to_csv("data/internships.csv", index=False)
+
 # Custom CSS to style the logo
 st.markdown("""
 <style>
@@ -68,6 +95,7 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
 # Verificar se o usuário está autenticado
 if not verificar_autenticacao():
     mostrar_pagina_login()
@@ -185,44 +213,81 @@ else:
         # Main app title with logo
         col1, col2 = st.columns([1, 3])
         with col1:
-            st.image('./assets/images/logo.svg', width=150)
+            try:
+                st.image('./assets/images/logo.svg', width=150)
+            except Exception as e:
+                st.error(f"Erro ao carregar logo: {e}")
+                st.write("Tentando caminho alternativo...")
+                try:
+                    # Tentar caminhos alternativos
+                    if os.path.exists("assets/images/logo.svg"):
+                        st.write("Logo existe, mas não pode ser carregado")
+                    else:
+                        st.write("Logo não existe no caminho esperado")
+                        
+                    # Listar arquivos na pasta assets
+                    if os.path.exists("assets"):
+                        st.write(f"Arquivos em assets: {os.listdir('assets')}")
+                        if os.path.exists("assets/images"):
+                            st.write(f"Arquivos em assets/images: {os.listdir('assets/images')}")
+                except Exception as e2:
+                    st.error(f"Erro ao verificar caminhos: {e2}")
         with col2:
             st.markdown('<div class="logo-text">Sistema de Gestão - Pós-Graduação Libras</div>', unsafe_allow_html=True)
         
         # Load data
-        students_df = load_students_data()
-        payments_df = load_payments_data()
-        internships_df = load_internships_data()
+        try:
+            students_df = load_students_data()
+            payments_df = load_payments_data()
+            internships_df = load_internships_data()
+        except Exception as e:
+            st.error(f"Erro ao carregar dados: {e}")
+            st.code(traceback.format_exc())
+            students_df = pd.DataFrame()
+            payments_df = pd.DataFrame()
+            internships_df = pd.DataFrame()
         
         # Dashboard
         st.header("Dashboard")
+
         # Create columns for metrics
         col1, col2, col3, col4 = st.columns(4)
+
         # Get active and canceled students
         active_students = get_active_students(students_df)
         canceled_students = get_canceled_students(students_df)
         overdue_payments = get_overdue_payments(students_df, payments_df)
+
         # Calculate metrics
         total_students = len(students_df)
         active_count = len(active_students)
         canceled_count = len(canceled_students)
         overdue_count = len(overdue_payments)
+
         with col1:
             st.metric("Total de Alunos", total_students)
+
         with col2:
             st.metric("Alunos Ativos", active_count)
+
         with col3:
             st.metric("Alunos Cancelados", canceled_count)
+
         with col4:
             st.metric("Pagamentos Atrasados", overdue_count)
+
         # Financial projection
         st.subheader("Projeção Financeira Mensal")
+
         current_month = datetime.now().month
         current_year = datetime.now().year
+
         monthly_revenue = calculate_monthly_revenue(students_df, payments_df, current_month, current_year)
         st.info(f"Receita projetada para {calendar.month_name[current_month]}/{current_year}: {format_currency(monthly_revenue)}")
+
         # Create two columns for the charts
         col1, col2 = st.columns(2)
+
         with col1:
             # Cancellation trend
             if not canceled_students.empty:
@@ -248,6 +313,7 @@ else:
                     st.write("Não há dados de cancelamento para exibir.")
             else:
                 st.write("Não há dados de cancelamento para exibir.")
+
         with col2:
             # Payment status distribution
             if not payments_df.empty:
@@ -279,16 +345,20 @@ else:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.write("Não há dados de pagamento para exibir.")
+
         # Students with overdue payments
         st.subheader("Alunos com Pagamentos Atrasados")
+
         if not overdue_payments.empty:
             # Display only relevant columns
             display_columns = ['name', 'phone', 'email', 'monthly_fee', 'last_due_date', 'days_overdue']
             st.dataframe(overdue_payments[display_columns], use_container_width=True)
         else:
             st.success("Não há pagamentos atrasados no momento.")
+
         # Internship summary
         st.subheader("Resumo de Estágios")
+
         if not internships_df.empty:
             # Calculate total internship hours
             total_hours = internships_df['duration_hours'].sum()
@@ -317,6 +387,7 @@ else:
             st.dataframe(recent_internships[['date', 'topic', 'duration_hours']], use_container_width=True)
         else:
             st.info("Não há dados de estágio registrados ainda.")
+
         st.markdown("""
         ---
         ### Navegação
