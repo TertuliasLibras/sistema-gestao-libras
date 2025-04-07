@@ -10,12 +10,7 @@ from utils import (
     load_students_data, 
     load_payments_data, 
     load_internships_data,
-st.sidebar.markdown("### Menu de Navegação")
-st.sidebar.markdown("[📊 Dashboard](./)")
-st.sidebar.markdown("[👨‍🎓 Alunos](/alunos)")
-st.sidebar.markdown("[💰 Pagamentos](/pagamentos)")
-st.sidebar.markdown("[⏱️ Estágios](/estagios)")
-st.sidebar.markdown("[📈 Relatórios](/relatorios)")
+    get_active_students,
     get_canceled_students,
     get_overdue_payments,
     calculate_monthly_revenue,
@@ -43,11 +38,6 @@ st.set_page_config(
     page_icon="📊",
     layout="wide"
 )
-
-# Diagnóstico de inicialização
-st.write(f"Diretório atual: {os.getcwd()}")
-st.write(f"Arquivos na pasta atual: {os.listdir('.')}")
-st.write(f"Arquivos em assets (se existir): {os.listdir('assets') if os.path.exists('assets') else 'Pasta assets não existe'}")
 
 # Create the data directory if it doesn't exist
 os.makedirs("data", exist_ok=True)
@@ -110,12 +100,13 @@ else:
         st.write(f"Usuário: {st.session_state['usuario_autenticado']['nome']}")
         
         if st.session_state['usuario_autenticado']['nivel'] == "admin":
-           st.sidebar.markdown("### Menu de Navegação")
-st.sidebar.markdown("[📊 Dashboard](./)")
-st.sidebar.markdown("[👨‍🎓 Alunos](/alunos)")
-st.sidebar.markdown("[💰 Pagamentos](/pagamentos)")
-st.sidebar.markdown("[⏱️ Estágios](/estagios)")
-st.sidebar.markdown("[📈 Relatórios](/relatorios)")
+            # Usar markdown para navegação em vez de page_link
+            st.markdown("### Menu de Navegação")
+            st.markdown("[📊 Dashboard](./)")
+            st.markdown("[👨‍🎓 Alunos](/Alunos)")
+            st.markdown("[💰 Pagamentos](/Pagamentos)")
+            st.markdown("[⏱️ Estágios](/Estagios)")
+            st.markdown("[📈 Relatórios](/Relatorios)")
             
             # Opção de gerenciar usuários (apenas admin)
             if st.button("Gerenciar Usuários"):
@@ -123,12 +114,13 @@ st.sidebar.markdown("[📈 Relatórios](/relatorios)")
             
             st.divider()
         else:
-       st.sidebar.markdown("### Menu de Navegação")
-st.sidebar.markdown("[📊 Dashboard](./)")
-st.sidebar.markdown("[👨‍🎓 Alunos](/alunos)")
-st.sidebar.markdown("[💰 Pagamentos](/pagamentos)")
-st.sidebar.markdown("[⏱️ Estágios](/estagios)")
-st.sidebar.markdown("[📈 Relatórios](/relatorios)")
+            # Usar markdown para navegação em vez de page_link
+            st.markdown("### Menu de Navegação")
+            st.markdown("[📊 Dashboard](./)")
+            st.markdown("[👨‍🎓 Alunos](/Alunos)")
+            st.markdown("[💰 Pagamentos](/Pagamentos)")
+            st.markdown("[⏱️ Estágios](/Estagios)")
+            st.markdown("[📈 Relatórios](/Relatorios)")
             st.divider()
         
         # Opção para fazer backup dos dados
