@@ -12,18 +12,24 @@ def main():
     # Carregar variáveis de ambiente
     load_dotenv()
     
-    # Configurar manualmente as credenciais do Supabase
+    # Definir credenciais do Supabase diretamente
     url = "https://apgjdytrovjdhnutkzqp.supabase.co"
     key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZ2pkeXRyb3ZqZGhudXRrenFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxMTkxMDcsImV4cCI6MjA1OTY5NTEwN30.mSmjrkoc5DaFAIwek5VThxX_GQwsWWGFif5rgDjoIr8"
     
-    st.success("Credenciais do Supabase configuradas manualmente.")
+    if url and key:
+        st.success("Credenciais do Supabase carregadas com sucesso.")
+    else:
+        st.error("Credenciais do Supabase não encontradas no arquivo .env")
     
     # Exibir formato de URL para depuração
     st.info(f"URL configurada: {url}")
-    st.info(f"KEY formato: {key[:10]}...{key[-5:]}")
+    if key:
+        st.info(f"KEY formato: {key[:10]}...{key[-5:]}")
+    else:
+        st.error("Chave do Supabase não encontrada")
     
     # Verificar se a URL está no formato correto
-    if not url.startswith("https://") or not ".supabase.co" in url:
+    if url and (not url.startswith("https://") or ".supabase.co" not in url):
         st.warning("ATENÇÃO: O formato da URL parece incorreto. Deve ser algo como 'https://seu-projeto.supabase.co'")
     
     # Botão para confirmar a configuração
@@ -85,12 +91,12 @@ def main():
                     if len(admin_check.data) == 0:
                         # Criar usuário admin
                         import hashlib
-                        admin_hash = hashlib.sha256('admin123'.encode()).hexdigest()
+                        admin_hash = hashlib.md5('admin123'.encode()).hexdigest()
                         admin_data = {
                             'username': 'admin',
                             'password_hash': admin_hash,
                             'name': 'Administrador',
-                            'role': 'admin'
+                            'level': 'admin'  # Usando apenas o campo level
                         }
                         supabase.table('users').insert(admin_data).execute()
                         st.success("Usuário admin criado com sucesso!")
