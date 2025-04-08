@@ -1,12 +1,14 @@
 [server]
 headless = true
-enableCORS = false
 address = "0.0.0.0"
-port = 8501
+port = 5000
+
+[browser]
+gatherUsageStats = false
 
 [theme]
-primaryColor = "#1E88E5"
+primaryColor = "#4CAF50"
 backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F0F2F6"
-textColor = "#31333F"
+textColor = "#262730"
 font = "sans serif"
