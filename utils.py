@@ -4,17 +4,65 @@ from datetime import datetime, timedelta
 import calendar
 import streamlit as st
 import os
-from database import (
-    load_students, 
-    load_payments, 
-    load_internships,
-    save_student, 
-    update_student,
-    save_payment, 
-    save_internship,
-    delete_student,
-    delete_student_payments
-)
+
+# Verificar se estamos no Streamlit Cloud
+IS_STREAMLIT_CLOUD = os.environ.get('STREAMLIT_SHARING_MODE') == 'streamlit' or os.environ.get('IS_STREAMLIT_CLOUD') == 'true'
+
+# Importar database ou no_database com base no ambiente
+if IS_STREAMLIT_CLOUD:
+    try:
+        # Tentar importar no_database primeiro (preferível no Cloud)
+        from no_database import (
+            load_students, 
+            load_payments, 
+            load_internships,
+            save_student, 
+            update_student,
+            save_payment,
+            update_payment,
+            delete_payment,
+            delete_student_payments,
+            save_internship,
+            update_internship,
+            delete_internship,
+            delete_student
+        )
+        print("Usando sistema de armazenamento baseado em CSV no Streamlit Cloud")
+    except ImportError:
+        try:
+            # Tentar database como fallback
+            from database import (
+                load_students, 
+                load_payments, 
+                load_internships,
+                save_student, 
+                update_student,
+                save_payment,
+                update_payment,
+                delete_payment,
+                delete_student_payments,
+                save_internship,
+                update_internship,
+                delete_internship,
+                delete_student
+            )
+            print("Usando Supabase no Streamlit Cloud")
+        except ImportError:
+            # Se não conseguir importar nenhum, mostre mensagem de erro
+            st.error("Erro: Não foi possível importar os módulos de banco de dados.")
+else:
+    # Ambiente local - usar database.py
+    from database import (
+        load_students, 
+        load_payments, 
+        load_internships,
+        save_student, 
+        update_student,
+        save_payment,
+        save_internship,
+        delete_student,
+        delete_student_payments
+    )
 
 # Função para converter lista de dicionários para DataFrame
 def list_to_df(data_list):
@@ -58,6 +106,16 @@ def save_payments_data(df):
     for _, row in df.iterrows():
         payment_data = row.to_dict()
         save_payment(payment_data)
+        
+def save_internships_data(df):
+    """Save internship data to Supabase"""
+    if df is None or df.empty:
+        return
+        
+    # Para cada estágio, verificar se já existe e atualizar/inserir
+    for _, row in df.iterrows():
+        internship_data = row.to_dict()
+        save_internship(internship_data)
 
 def get_active_students(students_df):
     """Get active students"""
