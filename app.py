@@ -60,8 +60,7 @@ if not os.path.exists("data/internships.csv"):
         "duration_hours": [],
         "students": []
     }).to_csv("data/internships.csv", index=False)
-
-# Custom CSS to style the logo
+    # Custom CSS to style the logo
 st.markdown("""
 <style>
     .logo-container {
@@ -125,7 +124,7 @@ else:
             st.session_state['mostrar_configuracoes'] = False
             st.session_state['mostrar_backup'] = False
             st.rerun()
-                            # Opções de administração (apenas admin)
+                    # Opções de administração (apenas admin)
         if st.session_state['usuario_autenticado']['nivel'] == "admin":
             st.markdown("### Administração")
             
@@ -165,8 +164,7 @@ else:
         if st.button("Voltar ao Dashboard"):
             st.session_state["mostrar_gerenciamento_usuarios"] = False
             st.rerun()
-    
-    # Verificar se deve mostrar a página de configurações
+                # Verificar se deve mostrar a página de configurações
     elif st.session_state.get("mostrar_configuracoes", False):
         st.subheader("Configurações do Sistema")
         
@@ -205,7 +203,7 @@ else:
         if st.button("Voltar ao Dashboard"):
             st.session_state["mostrar_configuracoes"] = False
             st.rerun()
-                        # Verificar se deve mostrar a página de backup
+                # Verificar se deve mostrar a página de backup
     elif st.session_state.get("mostrar_backup", False):
         st.subheader("Backup de Dados")
         
@@ -258,8 +256,7 @@ else:
                 )
             else:
                 st.info("Não há dados de estágios para exportar.")
-        
-               # Opção de backup completo
+                        # Opção de backup completo
         st.subheader("Backup Completo")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -288,8 +285,7 @@ else:
         students_df = load_students_data()
         payments_df = load_payments_data()
         internships_df = load_internships_data()
-        
-        # Importações internas para páginas
+                # Importações internas para páginas
         import sys
         import importlib.util
         
@@ -320,15 +316,15 @@ else:
             except Exception as e:
                 st.error(f"Erro ao carregar a página {page_name}: {e}")
                 return False
-                                # Navegação baseada na variável da sessão
+        
+        # Navegação baseada na variável da sessão
         if st.session_state.get("mostrar_gerenciamento_usuarios", False):
             pagina_gerenciar_usuarios()
             if st.button("Voltar ao Dashboard"):
                 st.session_state["mostrar_gerenciamento_usuarios"] = False
                 st.session_state['nav_page'] = 'dashboard'
                 st.rerun()
-        
-        elif st.session_state.get("mostrar_configuracoes", False):
+                        elif st.session_state.get("mostrar_configuracoes", False):
             st.subheader("Configurações do Sistema")
             
             # Carregar configurações atuais
@@ -367,7 +363,7 @@ else:
                 st.session_state["mostrar_configuracoes"] = False
                 st.session_state['nav_page'] = 'dashboard'
                 st.rerun()
-                                elif st.session_state.get("mostrar_backup", False):
+                        elif st.session_state.get("mostrar_backup", False):
             st.subheader("Backup de Dados")
             
             st.write("""
@@ -426,7 +422,7 @@ else:
                 st.session_state["mostrar_backup"] = False
                 st.session_state['nav_page'] = 'dashboard'
                 st.rerun()
-                                # Carregar a página com base na navegação
+                        # Carregar a página com base na navegação
         elif st.session_state['nav_page'] == 'alunos':
             # Carregar página de alunos
             load_page_module('alunos')
@@ -442,8 +438,7 @@ else:
         elif st.session_state['nav_page'] == 'relatorios':
             # Carregar página de relatórios
             load_page_module('relatorios')
-            
-        else:  # dashboard é o padrão
+                    else:  # dashboard é o padrão
             # Dashboard
             st.header("Dashboard")
 
@@ -472,7 +467,8 @@ else:
 
             with col4:
                 st.metric("Pagamentos Atrasados", overdue_count)
-                                    # Financial projection
+            
+            # Financial projection
             st.subheader("Projeção Financeira Mensal")
 
             current_month = datetime.now().month
@@ -480,7 +476,6 @@ else:
 
             monthly_revenue = calculate_monthly_revenue(students_df, payments_df, current_month, current_year)
             st.info(f"Receita projetada para {calendar.month_name[current_month]}/{current_year}: {format_currency(monthly_revenue)}")
-
             # Create two columns for the charts
             col1, col2 = st.columns(2)
 
@@ -541,7 +536,7 @@ else:
                     st.plotly_chart(fig, use_container_width=True)
                 else:
                     st.write("Não há dados de pagamento para exibir.")
-                                        # Students with overdue payments
+                                # Students with overdue payments
             st.subheader("Alunos com Pagamentos Atrasados")
 
             if not overdue_payments.empty:
@@ -585,7 +580,7 @@ else:
                     st.warning("Não foi possível exibir dados de pagamentos atrasados: formato de dados inválido.")
             else:
                 st.success("Não há pagamentos atrasados no momento.")
-                                    # Internship summary
+                            # Internship summary
             st.subheader("Resumo de Estágios")
 
             if not internships_df.empty:
