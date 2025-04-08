@@ -2,6 +2,6 @@ streamlit
 pandas
 plotly
 numpy
-supabase
+supabase==1.0.3
 python-dotenv
 httpx
