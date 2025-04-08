@@ -60,7 +60,8 @@ if not os.path.exists("data/internships.csv"):
         "duration_hours": [],
         "students": []
     }).to_csv("data/internships.csv", index=False)
-    # Custom CSS to style the logo
+
+# Custom CSS to style the logo
 st.markdown("""
 <style>
     .logo-container {
@@ -124,7 +125,8 @@ else:
             st.session_state['mostrar_configuracoes'] = False
             st.session_state['mostrar_backup'] = False
             st.rerun()
-                    # Opções de administração (apenas admin)
+        
+        # Opções de administração (apenas admin)
         if st.session_state['usuario_autenticado']['nivel'] == "admin":
             st.markdown("### Administração")
             
@@ -164,7 +166,8 @@ else:
         if st.button("Voltar ao Dashboard"):
             st.session_state["mostrar_gerenciamento_usuarios"] = False
             st.rerun()
-                # Verificar se deve mostrar a página de configurações
+    
+    # Verificar se deve mostrar a página de configurações
     elif st.session_state.get("mostrar_configuracoes", False):
         st.subheader("Configurações do Sistema")
         
@@ -203,7 +206,8 @@ else:
         if st.button("Voltar ao Dashboard"):
             st.session_state["mostrar_configuracoes"] = False
             st.rerun()
-                # Verificar se deve mostrar a página de backup
+    
+    # Verificar se deve mostrar a página de backup
     elif st.session_state.get("mostrar_backup", False):
         st.subheader("Backup de Dados")
         
@@ -256,7 +260,8 @@ else:
                 )
             else:
                 st.info("Não há dados de estágios para exportar.")
-                        # Opção de backup completo
+        
+        # Opção de backup completo
         st.subheader("Backup Completo")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -285,7 +290,8 @@ else:
         students_df = load_students_data()
         payments_df = load_payments_data()
         internships_df = load_internships_data()
-                # Importações internas para páginas
+        
+        # Importações internas para páginas
         import sys
         import importlib.util
         
@@ -317,113 +323,8 @@ else:
                 st.error(f"Erro ao carregar a página {page_name}: {e}")
                 return False
         
-        # Navegação baseada na variável da sessão
-        if st.session_state.get("mostrar_gerenciamento_usuarios", False):
-            pagina_gerenciar_usuarios()
-            if st.button("Voltar ao Dashboard"):
-                st.session_state["mostrar_gerenciamento_usuarios"] = False
-                st.session_state['nav_page'] = 'dashboard'
-                st.rerun()
-                        elif st.session_state.get("mostrar_configuracoes", False):
-            st.subheader("Configurações do Sistema")
-            
-            # Carregar configurações atuais
-            config = load_config()
-            
-            # Upload de logo
-            st.write("### Logo do Sistema")
-            st.write("Faça upload de uma nova imagem para usar como logo do sistema.")
-            
-            uploaded_file = st.file_uploader("Escolher imagem", type=['png', 'jpg', 'jpeg', 'svg'])
-            if uploaded_file is not None:
-                # Exibir preview da imagem
-                st.image(uploaded_file, width=200, caption="Preview da nova logo")
-                
-                # Botão para salvar
-                if st.button("Salvar Nova Logo"):
-                    logo_path = save_uploaded_logo(uploaded_file)
-                    if logo_path:
-                        st.success(f"Logo atualizada com sucesso! Novo caminho: {logo_path}")
-                        # Aguardar um pouco antes de recarregar
-                        st.rerun()
-            
-            # Mostrar logo atual
-            st.write("### Logo Atual")
-            logo_path = get_logo_path()
-            st.image(logo_path, width=150)
-            
-            # Opções para restaurar logo padrão
-            if st.button("Restaurar Logo Padrão"):
-                config["logo_path"] = "assets/images/logo.svg"
-                save_config(config)
-                st.success("Logo padrão restaurada com sucesso!")
-                st.rerun()
-            
-            if st.button("Voltar ao Dashboard"):
-                st.session_state["mostrar_configuracoes"] = False
-                st.session_state['nav_page'] = 'dashboard'
-                st.rerun()
-                        elif st.session_state.get("mostrar_backup", False):
-            st.subheader("Backup de Dados")
-            
-            st.write("""
-            Aqui você pode baixar todos os dados do sistema em formato CSV para backup ou análise externa.
-            """)
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                if students_df is not None and not students_df.empty:
-                    csv_students = students_df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Baixar Dados de Alunos",
-                        csv_students,
-                        "alunos_backup.csv",
-                        "text/csv",
-                        key='download-students'
-                    )
-                else:
-                    st.info("Não há dados de alunos para exportar.")
-            
-            with col2:
-                if payments_df is not None and not payments_df.empty:
-                    csv_payments = payments_df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Baixar Dados de Pagamentos",
-                        csv_payments,
-                        "pagamentos_backup.csv",
-                        "text/csv",
-                        key='download-payments'
-                    )
-                else:
-                    st.info("Não há dados de pagamentos para exportar.")
-            
-            with col3:
-                if internships_df is not None and not internships_df.empty:
-                    csv_internships = internships_df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Baixar Dados de Estágios",
-                        csv_internships,
-                        "estagios_backup.csv",
-                        "text/csv",
-                        key='download-internships'
-                    )
-                else:
-                    st.info("Não há dados de estágios para exportar.")
-            
-            # Opção de backup completo
-            st.subheader("Backup Completo")
-            
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            
-            # TODO: Implementar zip de múltiplos arquivos quando necessário
-            
-            if st.button("Voltar ao Dashboard"):
-                st.session_state["mostrar_backup"] = False
-                st.session_state['nav_page'] = 'dashboard'
-                st.rerun()
-                        # Carregar a página com base na navegação
-        elif st.session_state['nav_page'] == 'alunos':
+        # Carregar a página com base na navegação
+        if st.session_state['nav_page'] == 'alunos':
             # Carregar página de alunos
             load_page_module('alunos')
             
@@ -438,7 +339,8 @@ else:
         elif st.session_state['nav_page'] == 'relatorios':
             # Carregar página de relatórios
             load_page_module('relatorios')
-                    else:  # dashboard é o padrão
+            
+        else:  # dashboard é o padrão
             # Dashboard
             st.header("Dashboard")
 
@@ -476,6 +378,7 @@ else:
 
             monthly_revenue = calculate_monthly_revenue(students_df, payments_df, current_month, current_year)
             st.info(f"Receita projetada para {calendar.month_name[current_month]}/{current_year}: {format_currency(monthly_revenue)}")
+
             # Create two columns for the charts
             col1, col2 = st.columns(2)
 
@@ -536,7 +439,8 @@ else:
                     st.plotly_chart(fig, use_container_width=True)
                 else:
                     st.write("Não há dados de pagamento para exibir.")
-                                # Students with overdue payments
+            
+            # Students with overdue payments
             st.subheader("Alunos com Pagamentos Atrasados")
 
             if not overdue_payments.empty:
@@ -580,7 +484,8 @@ else:
                     st.warning("Não foi possível exibir dados de pagamentos atrasados: formato de dados inválido.")
             else:
                 st.success("Não há pagamentos atrasados no momento.")
-                            # Internship summary
+            
+            # Internship summary
             st.subheader("Resumo de Estágios")
 
             if not internships_df.empty:
