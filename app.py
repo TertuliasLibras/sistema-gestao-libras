@@ -259,7 +259,7 @@ else:
             else:
                 st.info("Não há dados de estágios para exportar.")
         
-        # Opção de backup completo
+               # Opção de backup completo
         st.subheader("Backup Completo")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -269,7 +269,8 @@ else:
         if st.button("Voltar ao Dashboard"):
             st.session_state["mostrar_backup"] = False
             st.rerun()
-                        else:
+
+    else:
         # Main app title with logo
         col1, col2 = st.columns([1, 3])
         with col1:
