@@ -16,12 +16,18 @@ def init_connection():
     except:
         # Cair para variáveis de ambiente se Secrets não estiver disponível
         try:
-            url = os.getenv("SUPABASE_URL")
-            key = os.getenv("SUPABASE_KEY")
+            # Obter as variáveis de ambiente diretamente
+            url = "https://apgjdytrovjdhnutkzqp.supabase.co"
+            key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwZ2pkeXRyb3ZqZGhudXRrenFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQxMTkxMDcsImV4cCI6MjA1OTY5NTEwN30.mSmjrkoc5DaFAIwek5VThxX_GQwsWWGFif5rgDjoIr8"
             
             if not url or not key:
                 # Usando mensagem de erro mais amigável para o usuário
                 st.error("Configuração do banco de dados não encontrada. Por favor, configure as credenciais do Supabase.")
+                return None
+            
+            # Verificar formato da URL
+            if url and not url.startswith("https://"):
+                st.error(f"URL do Supabase inválida. Deve começar com https://")
                 return None
                 
             return create_client(url, key)
