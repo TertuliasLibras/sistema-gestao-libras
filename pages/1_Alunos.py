@@ -1,3 +1,16 @@
+import os
+
+# Verificar se estamos no Streamlit Cloud
+IS_STREAMLIT_CLOUD = os.environ.get('STREAMLIT_SHARING_MODE') == 'streamlit' or os.environ.get('IS_STREAMLIT_CLOUD') == 'true'
+
+# Importar módulo de login adequado
+try:
+    if IS_STREAMLIT_CLOUD:
+        from login_fallback import verificar_autenticacao, mostrar_pagina_login
+    else:
+        from login import verificar_autenticacao, mostrar_pagina_login
+except ImportError:
+    from login_fallback import verificar_autenticacao, mostrar_pagina_login
 import streamlit as st
 import pandas as pd
 from datetime import datetime
